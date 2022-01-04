@@ -9,12 +9,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/Masterminds/semver"
 	"github.com/cs3org/reva/v2/cmd/revad/runtime"
 	"github.com/gofrs/uuid"
 	"github.com/oklog/run"
 	ociscfg "github.com/owncloud/ocis/ocis-pkg/config"
 	"github.com/owncloud/ocis/ocis-pkg/conversions"
 	"github.com/owncloud/ocis/ocis-pkg/sync"
+	"github.com/owncloud/ocis/ocis-pkg/version"
 	"github.com/owncloud/ocis/storage/pkg/config"
 	"github.com/owncloud/ocis/storage/pkg/server/debug"
 	"github.com/owncloud/ocis/storage/pkg/tracing"
@@ -140,6 +142,11 @@ func Frontend(cfg *config.Config) *cli.Command {
 
 // frontendConfigFromStruct will adapt an oCIS config struct into a reva mapstructure to start a reva service.
 func frontendConfigFromStruct(c *cli.Context, cfg *config.Config, filesCfg map[string]interface{}) map[string]interface{} {
+	parsedVersion, err := semver.NewVersion(version.String)
+	if err != nil {
+		parsedVersion, _ = semver.NewVersion("0.0.0")
+	}
+
 	return map[string]interface{}{
 		"core": map[string]interface{}{
 			"max_cpus":             cfg.Reva.Users.MaxCPUs,
@@ -300,10 +307,10 @@ func frontendConfigFromStruct(c *cli.Context, cfg *config.Config, filesCfg map[s
 						"version": map[string]interface{}{
 							"product": "oCIS",
 							"edition": "Community",
-							"major":   1,
-							"minor":   16,
-							"micro":   0,
-							"string":  "1.16.0",
+							"major":   parsedVersion.Major(),
+							"minor":   parsedVersion.Minor(),
+							"micro":   parsedVersion.Patch(),
+							"string":  version.String,
 						},
 					},
 				},
