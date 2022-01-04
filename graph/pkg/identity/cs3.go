@@ -20,6 +20,10 @@ type CS3 struct {
 	Logger *log.Logger
 }
 
+func (i *CS3) CreateUser(ctx context.Context, user libregraph.User) (*libregraph.User, error) {
+	panic("not implemented!") // TODO do NOT under any circumstances let this garbage make it to production.
+}
+
 func (i *CS3) GetUser(ctx context.Context, userID string) (*libregraph.User, error) {
 	client, err := pool.GetGatewayServiceClient(i.Config.Address)
 	if err != nil {

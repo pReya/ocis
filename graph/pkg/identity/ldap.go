@@ -84,6 +84,73 @@ func NewLDAPBackend(lc ldap.Client, config config.LDAP, logger *log.Logger) (*LD
 	}, nil
 }
 
+//objectClass: inetOrgPerson
+//objectClass: organizationalPerson
+//objectClass: ownCloud
+//objectClass: person
+//objectClass: posixAccount
+//objectClass: top
+
+func (i *LDAP) CreateUser(ctx context.Context, user libregraph.User) (*libregraph.User, error) {
+	if err := i.conn.Add(&ldap.AddRequest{
+		DN: "uid=nobody,ou=users,dc=owncloud,dc=com",
+		Attributes: []ldap.Attribute{
+			{
+				Type: "objectClass",
+				Vals: []string{"inetOrgPerson", "organizationalPerson", "ownCloud", "person", "posixAccount", "top"},
+			},
+			{
+				Type: "sn",
+				Vals: []string{"nobody"},
+			},
+			{
+				Type: "cn",
+				Vals: []string{"mister nobody"},
+			},
+			{
+				Type: "givenName",
+				Vals: []string{"Jerry Nobody"},
+			},
+			{
+				Type: "uidNumber",
+				Vals: []string{"5555"},
+			},
+			{
+				Type: "gidNumber",
+				Vals: []string{"29887"},
+			},
+			{
+				Type: "homeDirectory",
+				Vals: []string{"/home/mrnobody"},
+			},
+			{
+				Type: "userPassword",
+				Vals: []string{"e1NTSEF9Z05LZTRreHasdmOGRUREY5eHlhSmpySTZ3MGxSVUM1d1RGcWROTVE9PQ=="},
+			},
+			{
+				Type: i.userAttributeMap.mail,
+				Vals: []string{*user.Mail},
+			},
+			{
+				Type: i.userAttributeMap.userName,
+				Vals: []string{*user.OnPremisesSamAccountName},
+			},
+			{
+				Type: i.userAttributeMap.id,
+				Vals: []string{*user.Id},
+			},
+			{
+				Type: i.userAttributeMap.displayName,
+				Vals: []string{*user.DisplayName},
+			},
+		},
+		Controls: nil,
+	}); err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
+
 func (i *LDAP) GetUser(ctx context.Context, userID string) (*libregraph.User, error) {
 	i.logger.Debug().Str("backend", "ldap").Msg("GetUser")
 	userID = ldap.EscapeFilter(userID)

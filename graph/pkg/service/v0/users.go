@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"net/url"
 
+	libregraph "github.com/owncloud/libre-graph-api-go"
+
 	revactx "github.com/cs3org/reva/pkg/ctx"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/render"
@@ -45,6 +47,21 @@ func (g Graph) GetUsers(w http.ResponseWriter, r *http.Request) {
 	}
 	render.Status(r, http.StatusOK)
 	render.JSON(w, r, &listResponse{Value: users})
+}
+
+func (g Graph) PostUser(w http.ResponseWriter, r *http.Request) {
+	u := libregraph.NewUser()
+	u.SetMail("example@whateverss.com")
+	u.SetOnPremisesSamAccountName("mrrrrwhatevs")
+	u.SetId("d09cbd14-6275-11ec-a6d3-77e6c533746c")
+	u.SetDisplayName("mrmrwhatever")
+
+	if _, err := g.identityBackend.CreateUser(r.Context(), *u); err != nil {
+		errorcode.GeneralException.Render(w, r, http.StatusInternalServerError, err.Error())
+	}
+
+	render.Status(r, http.StatusOK)
+	render.JSON(w, r, &listResponse{Value: u})
 }
 
 // GetUser implements the Service interface.
