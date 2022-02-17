@@ -19,8 +19,17 @@
                 "PROXY_ENABLE_BASIC_AUTH": "true",
                 // set insecure options because we don't have valid certificates in dev environments
                 "OCIS_INSECURE": "true",
+                "PROXY_TLS": "false",
+                "OCIS_URL": "https://ocis.owncloud.test",
+                "WEB_ASSET_PATH": "/home/kloucek/Projects/github.com/owncloud/web/dist/",
                 // OCIS_RUN_EXTENSIONS allows to start a subset of extensions even in the supervised mode
                 //"OCIS_RUN_EXTENSIONS": "settings,storage-metadata,glauth,graph,graph-explorer,idp,ocs,store,thumbnails,web,webdav,storage-frontend,storage-gateway,storage-userprovider,storage-groupprovider,storage-authbasic,storage-authbearer,storage-authmachine,storage-users,storage-shares,storage-public-link,storage-appprovider,storage-sharing,accounts,proxy",
+                "APP_PROVIDER_DRIVER": "wopi",
+                "APP_PROVIDER_WOPI_DRIVER_APP_NAME": "Collabora",
+                "APP_PROVIDER_WOPI_DRIVER_APP_URL": "https://collabora.owncloud.test",
+                "APP_PROVIDER_WOPI_DRIVER_INSECURE": "true",
+                "APP_PROVIDER_WOPI_DRIVER_IOP_SECRET": "LoremIpsum123",
+                "APP_PROVIDER_WOPI_DRIVER_WOPI_URL": "https://wopiserver.owncloud.test",
             }
         }
     ]
