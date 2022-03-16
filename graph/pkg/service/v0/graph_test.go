@@ -47,7 +47,7 @@ var _ = Describe("Graph", func() {
 		})
 	})
 
-	Describe("drive", func() {
+	Describe("List drives", func() {
 		It("can list an empty list of spaces", func() {
 			gatewayClient.On("ListStorageSpaces", mock.Anything, mock.Anything).Return(&provider.ListStorageSpacesResponse{
 				Status:        status.NewOK(ctx),
@@ -207,28 +207,62 @@ var _ = Describe("Graph", func() {
 			Expect(libreError.Error.Message).To(Equal("we do not support <owner> as a order parameter"))
 			Expect(libreError.Error.Code).To(Equal(errorcode.InvalidRequest.String()))
 		})
-		It("can list a spaces with invalid query parameter", func() {
+		It("can list a spaces with quota", func() {
 			gatewayClient.On("ListStorageSpaces", mock.Anything, mock.Anything).Return(&provider.ListStorageSpacesResponse{
-				Status:        status.NewOK(ctx),
-				StorageSpaces: []*provider.StorageSpace{}}, nil)
-			gatewayClient.On("InitiateFileDownload", mock.Anything, mock.Anything).Return(&gateway.InitiateFileDownloadResponse{
-				Status: status.NewNotFound(ctx, "not found"),
+				Status: status.NewOK(ctx),
+				StorageSpaces: []*provider.StorageSpace{
+					{
+						Id:        &provider.StorageSpaceId{OpaqueId: "aspaceid"},
+						SpaceType: "aspacetype",
+						Root: &provider.ResourceId{
+							StorageId: "aspaceid",
+							OpaqueId:  "anopaqueid",
+						},
+						Name: "aspacename",
+						Opaque: &typesv1beta1.Opaque{
+							Map: map[string]*typesv1beta1.OpaqueEntry{
+								"spaceAlias": {Decoder: "plain", Value: []byte("aspacetype/aspacename")},
+								"etag":       {Decoder: "plain", Value: []byte("101112131415")},
+							},
+						},
+					},
+				},
 			}, nil)
 			gatewayClient.On("GetQuota", mock.Anything, mock.Anything).Return(&provider.GetQuotaResponse{
-				Status: status.NewUnimplemented(ctx, fmt.Errorf("not supported"), "not supported"),
+				Status:     status.NewOK(ctx),
+				TotalBytes: uint64(1234),
+				UsedBytes:  uint64(4),
 			}, nil)
 
-			r := httptest.NewRequest(http.MethodGet, "/graph/v1.0/me/drives?§orderby=owner%20asc", nil)
+			r := httptest.NewRequest(http.MethodGet, "/graph/v1.0/me/drives", nil)
 			rr := httptest.NewRecorder()
 			svc.GetDrives(rr, r)
-			Expect(rr.Code).To(Equal(http.StatusBadRequest))
+			Expect(rr.Code).To(Equal(http.StatusOK))
 
 			body, _ := io.ReadAll(rr.Body)
-			var libreError libregraph.OdataError
-			err := json.Unmarshal(body, &libreError)
-			Expect(err).To(Not(HaveOccurred()))
-			Expect(libreError.Error.Message).To(Equal("Query parameter '§orderby' is not supported. Cause: Query parameter '§orderby' is not supported"))
-			Expect(libreError.Error.Code).To(Equal(errorcode.InvalidRequest.String()))
+			Expect(body).To(MatchJSON(`
+			{
+				"value":[
+					{
+						"driveAlias":"aspacetype/aspacename",
+						"driveType":"aspacetype",
+						"id":"aspaceid",
+						"name":"aspacename",
+						"quota":{
+							"remaining":1230,
+							"state":"normal",
+							"total":1234,
+							"used":4
+						},
+						"root":{
+							"eTag":"101112131415",
+							"id":"aspaceid!anopaqueid",
+							"webDavUrl":"https://localhost:9200/dav/spaces/aspaceid"
+						}
+					}
+				]
+			}
+			`))
 		})
 	})
 })
