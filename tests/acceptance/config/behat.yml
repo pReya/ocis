@@ -56,6 +56,14 @@ default:
         - FilesVersionsContext:
         - PublicWebDavContext:
 
+    apiGraphUser:
+      paths:
+        - '%paths.base%/../features/apiGraphUser'
+      contexts:
+        - GraphContext:
+        - OCSContext:
+        - FeatureContext: *common_feature_context_params
+
   extensions:
     jarnaiz\JUnitFormatter\JUnitFormatterExtension:
       filename: report.xml
