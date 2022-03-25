@@ -1,3 +1,4 @@
+@api
 Feature:
   As an administrator
   I should be able to create user using Graph API

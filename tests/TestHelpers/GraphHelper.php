@@ -8,6 +8,7 @@
 
 namespace TestHelpers;
 
+use Behat\Gherkin\Node\TableNode;
 use Exception;
 
 /**
@@ -27,6 +28,7 @@ class GraphHelper {
         $fullUrl = $baseUrl;
         if (\substr($fullUrl, -1) !== '/') $fullUrl .= '/';
         $fullUrl .= 'graph/v1.0/' . $path;
+        var_dump($headers);
         return HttpRequestHelper::sendRequest(
             $fullUrl,
             $xRequestId,
@@ -47,11 +49,10 @@ class GraphHelper {
         ?string $email = null,
         ?string $displayName = null
     ) {
-        $payload = [];
-        if ($displayName) $payload['displayName'] = $displayName;
-        if ($email) $payload['mail'] = $email;
-        if ($userName) $payload['onPremisesSamAccountName'] = $userName;
-        if ($password) $payload['passwordProfile'] = ['password' => $password];
+        $payload['onPremisesSamAccountName'] = $userName;
+        $payload['passwordProfile'] = ['password' => $password];
+        $payload['displayName'] = $displayName ?? $userName;
+        $payload['mail'] = $email ?? $userName . '@example.com';
 
         return self::sendHttpRequest(
             $baseUrl,
@@ -60,7 +61,8 @@ class GraphHelper {
             $adminPassword,
             "POST",
             "users",
-            $payload
+            $payload,
+            ['Content-Type' => 'application/json']
         );
     }
 }

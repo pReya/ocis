@@ -8,11 +8,9 @@
 
 use Behat\Behat\Context\Context;
 use Behat\Behat\Hook\Scope\BeforeScenarioScope;
-use Behat\Gherkin\Node\TableNode;
-use TestHelpers\HttpRequestHelper;
 use TestHelpers\GraphHelper;
-use GuzzleHttp\Exception\GuzzleException;
-use PHPUnit\Framework\Assert;
+use TestHelpers\HttpRequestHelper;
+use TestHelpers\SetupHelper;
 
 require_once "bootstrap.php";
 
@@ -35,6 +33,8 @@ class GraphContext implements Context {
      * @throws Exception
      */
     public function adminSendsUserCreationRequestUsingTheProvisioningApi(string $user, string $password):void {
+        $user = $this->featureContext->getActualUsername($user);
+        $password = $this->featureContext->getActualPassword($password);
         $response = GraphHelper::createUser(
             $this->featureContext->getBaseUrl(),
             $this->featureContext->getStepLineRef(),
@@ -50,7 +50,7 @@ class GraphContext implements Context {
             $user,
             $password,
             null,
-            ,
+            $user,
             $success
         );
     }
@@ -73,5 +73,11 @@ class GraphContext implements Context {
         $environment = $scope->getEnvironment();
         // Get all the contexts you need in this context
         $this->featureContext = $environment->getContext('FeatureContext');
+        SetupHelper::init(
+            $this->featureContext->getAdminUsername(),
+            $this->featureContext->getAdminPassword(),
+            $this->featureContext->getBaseUrl(),
+            $this->featureContext->getOcPath()
+        );
     }
 }
