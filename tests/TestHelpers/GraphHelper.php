@@ -8,37 +8,42 @@
 
 namespace TestHelpers;
 
-use Behat\Gherkin\Node\TableNode;
-use Exception;
+use GuzzleHttp\Exception\GuzzleException;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * A helper class for managing users and groups using the Graph API
  */
 class GraphHelper {
-    private static function sendHttpRequest(
-        string $baseUrl,
-        string $xRequestId,
-        string $user,
-        string $password,
-        ?string $method = "GET",
-        ? string $path = '',
-        ?array $body = null,
-        ?array $headers = null
-    ) {
+    public static function isTestingWithGraphApi(): bool {
+        return \getenv('TEST_WITH_GRAPH_API') === 'true';
+    }
+    /**
+     * @param string $baseUrl
+     * @param string $path
+     *
+     * @return string
+     */
+    private static function getFullUrl(string $baseUrl, string $path):string {
         $fullUrl = $baseUrl;
         if (\substr($fullUrl, -1) !== '/') $fullUrl .= '/';
         $fullUrl .= 'graph/v1.0/' . $path;
-        var_dump($headers);
-        return HttpRequestHelper::sendRequest(
-            $fullUrl,
-            $xRequestId,
-            $method,
-            $user,
-            $password,
-            $headers,
-            $body
-        );
+        return $fullUrl;
     }
+
+    /**
+     * @param string $baseUrl
+     * @param string $xRequestId
+     * @param string $adminUser
+     * @param string $adminPassword
+     * @param string $userName
+     * @param string $password
+     * @param string|null $email
+     * @param string|null $displayName
+     *
+     * @return ResponseInterface
+     * @throws GuzzleException
+     */
     public static function createUser(
         string $baseUrl,
         string $xRequestId,
@@ -48,21 +53,47 @@ class GraphHelper {
         string $password,
         ?string $email = null,
         ?string $displayName = null
-    ) {
+    ):ResponseInterface {
         $payload['onPremisesSamAccountName'] = $userName;
         $payload['passwordProfile'] = ['password' => $password];
         $payload['displayName'] = $displayName ?? $userName;
         $payload['mail'] = $email ?? $userName . '@example.com';
 
-        return self::sendHttpRequest(
-            $baseUrl,
+        $headers = ['Content-Type' => 'application/json'];
+        $url = self::getFullUrl($baseUrl, 'users');
+        return HttpRequestHelper::post(
+            $url,
             $xRequestId,
             $adminUser,
             $adminPassword,
-            "POST",
-            "users",
-            $payload,
-            ['Content-Type' => 'application/json']
+            $headers,
+            \json_encode($payload)
+        );
+    }
+
+    /**
+     * @param string $baseUrl
+     * @param string $xRequestId
+     * @param string $adminUser
+     * @param string $adminPassword
+     * @param string $userName
+     *
+     * @return ResponseInterface
+     * @throws GuzzleException
+     */
+    public function deleteUser(
+        string $baseUrl,
+        string $xRequestId,
+        string $adminUser,
+        string $adminPassword,
+        string $userName
+    ):ResponseInterface {
+        $url = self::getFullUrl($baseUrl, 'users/' . $userName);
+        return HttpRequestHelper::delete(
+            $url,
+            $xRequestId,
+            $adminUser,
+            $adminPassword,
         );
     }
 }

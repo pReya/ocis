@@ -11,6 +11,8 @@ use Behat\Behat\Hook\Scope\BeforeScenarioScope;
 use TestHelpers\GraphHelper;
 use TestHelpers\HttpRequestHelper;
 use TestHelpers\SetupHelper;
+use GuzzleHttp\Exception\GuzzleException;
+
 
 require_once "bootstrap.php";
 
@@ -21,7 +23,7 @@ class GraphContext implements Context {
     /**
      * @var FeatureContext
      */
-    private $featureContext;
+    private FeatureContext $featureContext;
 
     /**
      * @When /^the administrator sends a user creation request for user "([^"]*)" password "([^"]*)" using the graph API$/
@@ -30,9 +32,9 @@ class GraphContext implements Context {
      * @param string $password
      *
      * @return void
-     * @throws Exception
+     * @throws GuzzleException
      */
-    public function adminSendsUserCreationRequestUsingTheProvisioningApi(string $user, string $password):void {
+    public function adminSendsUserCreationRequestUsingTheGraphApi(string $user, string $password):void {
         $user = $this->featureContext->getActualUsername($user);
         $password = $this->featureContext->getActualPassword($password);
         $response = GraphHelper::createUser(
@@ -50,7 +52,7 @@ class GraphContext implements Context {
             $user,
             $password,
             null,
-            $user,
+            null,
             $success
         );
     }
