@@ -4,13 +4,9 @@
     "platform": {
       "php": "7.2"
     },
-    "vendor-dir": "./vendor-php",
-    "allow-plugins": {
-      "bamarni/composer-bin-plugin": true
-    }
+    "vendor-dir": "./vendor-php"
   },
   "require": {
-    "ext-json": "*"
   },
   "require-dev": {
     "bamarni/composer-bin-plugin": "^1.4"

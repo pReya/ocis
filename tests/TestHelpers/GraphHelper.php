@@ -31,6 +31,25 @@ class GraphHelper {
         return $fullUrl;
     }
 
+    private static function convertDictJSONString(array $payload):string {
+        $output_str = '{';
+        foreach ($payload as $key => $value) {
+            $output_str .= '"' . $key . '":';
+            if (\is_array($value)) {
+                $output_str .= self::convertDictJSONString($value);
+            } elseif (\is_string($value)) {
+                $output_str .= '"' . $value . '"';
+            } else {
+                $output_str .= $value;
+            }
+            if (\next($payload) !== false) {
+                $output_str .= ',';
+            }
+        }
+        return $output_str . '}';
+    }
+
+
     /**
      * @param string $baseUrl
      * @param string $xRequestId
@@ -67,7 +86,7 @@ class GraphHelper {
             $adminUser,
             $adminPassword,
             $headers,
-            \json_encode($payload)
+            self::convertDictJSONString($payload)
         );
     }
 
