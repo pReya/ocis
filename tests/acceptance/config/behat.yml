@@ -62,7 +62,13 @@ default:
       contexts:
         - GraphContext:
         - FeatureContext: *common_feature_context_params
-        - OCSContext:
+
+    apiGraphGroup:
+      paths:
+        - '%paths.base%/../features/apiGraphGroup'
+      contexts:
+        - GraphContext:
+        - FeatureContext: *common_feature_context_params
 
   extensions:
     jarnaiz\JUnitFormatter\JUnitFormatterExtension:

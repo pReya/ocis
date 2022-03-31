@@ -8,6 +8,7 @@
 
 namespace TestHelpers;
 
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use Psr\Http\Message\ResponseInterface;
 
@@ -29,24 +30,6 @@ class GraphHelper {
         if (\substr($fullUrl, -1) !== '/') $fullUrl .= '/';
         $fullUrl .= 'graph/v1.0/' . $path;
         return $fullUrl;
-    }
-
-    private static function convertDictJSONString(array $payload):string {
-        $output_str = '{';
-        foreach ($payload as $key => $value) {
-            $output_str .= '"' . $key . '":';
-            if (\is_array($value)) {
-                $output_str .= self::convertDictJSONString($value);
-            } elseif (\is_string($value)) {
-                $output_str .= '"' . $value . '"';
-            } else {
-                $output_str .= $value;
-            }
-            if (\next($payload) !== false) {
-                $output_str .= ',';
-            }
-        }
-        return $output_str . '}';
     }
 
 
@@ -86,7 +69,7 @@ class GraphHelper {
             $adminUser,
             $adminPassword,
             $headers,
-            self::convertDictJSONString($payload)
+            json_encode($payload)
         );
     }
 
@@ -100,7 +83,7 @@ class GraphHelper {
      * @return ResponseInterface
      * @throws GuzzleException
      */
-    public function deleteUser(
+    public static function deleteUser(
         string $baseUrl,
         string $xRequestId,
         string $adminUser,
@@ -108,6 +91,85 @@ class GraphHelper {
         string $userName
     ):ResponseInterface {
         $url = self::getFullUrl($baseUrl, 'users/' . $userName);
+        return HttpRequestHelper::delete(
+            $url,
+            $xRequestId,
+            $adminUser,
+            $adminPassword,
+        );
+    }
+
+    /**
+     * @param string $baseUrl
+     * @param string $xRequestId
+     * @param string $adminUser
+     * @param string $adminPassword
+     * @param string $groupName
+     *
+     * @return ResponseInterface
+     * @throws GuzzleException
+     */
+    public static function createGroup(
+        string $baseUrl,
+        string $xRequestId,
+        string $adminUser,
+        string $adminPassword,
+        string $groupName
+    ):ResponseInterface {
+        $payload['displayName'] = $groupName;
+        $headers = ['Content-Type' => 'application/json'];
+        $url = self::getFullUrl($baseUrl, 'groups');
+        return HttpRequestHelper::post(
+            $url,
+            $xRequestId,
+            $adminUser,
+            $adminPassword,
+            $headers,
+            json_encode($payload)
+        );
+    }
+
+    /**
+     * @throws Exception
+     */
+    public static function getGroups(
+        string $baseUrl,
+        string $xRequestId,
+        string $adminUser,
+        string $adminPassword
+    ):array {
+        $url = self::getFullUrl($baseUrl, 'groups');
+        $response = HttpRequestHelper::get(
+            $url,
+            $xRequestId,
+            $adminUser,
+            $adminPassword
+        );
+        $groupsListEncoded = json_decode($response->getBody()->getContents(), true);
+        if (!isset($groupsListEncoded['value'])) {
+            throw new Exception('No groups found');
+        } else return $groupsListEncoded['value'];
+    }
+
+    /**
+     * @param string $baseUrl
+     * @param string $xRequestId
+     * @param string $adminUser
+     * @param string $adminPassword
+     * @param string $groupId
+     *
+     * @return ResponseInterface
+     * @throws GuzzleException
+     * @throws Exception
+     */
+    public static function deleteGroup(
+        string $baseUrl,
+        string $xRequestId,
+        string $adminUser,
+        string $adminPassword,
+        string $groupId
+    ):ResponseInterface {
+        $url = self::getFullUrl($baseUrl, 'groups/' . $groupId);
         return HttpRequestHelper::delete(
             $url,
             $xRequestId,
