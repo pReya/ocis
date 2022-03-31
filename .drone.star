@@ -382,10 +382,7 @@ def goLicenseCheck(ctx):
             "os": "linux",
             "arch": "amd64",
         },
-        "steps": skipIfUnchanged(ctx, "acceptance-tests") +
-                 #makeNodeGenerate("") +
-                 #makeGoGenerate("") +
-                 #build() +
+        "steps": skipIfUnchanged(ctx, "go-mod") +
                  [
                      {
                          "name": "check-go-license",
@@ -1714,8 +1711,14 @@ def skipIfUnchanged(ctx, type):
     acceptance = [
         "^tests/acceptance/.*",
     ]
+    go_mod = [
+        "^go.mod",
+        "^go.sum"
+    ]
 
     skip = []
+    if type == "go-mod":
+        skip = go_mod
     if type == "acceptance-tests":
         skip = base + unit
     if type == "unit-tests":
