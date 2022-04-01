@@ -377,7 +377,7 @@ def licenseCheck(ctx):
     return {
         "kind": "pipeline",
         "type": "docker",
-        "name": "go-license-check",
+        "name": "license-check",
         "platform": {
             "os": "linux",
             "arch": "amd64",
