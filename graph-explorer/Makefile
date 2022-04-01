@@ -35,10 +35,10 @@ pull-assets:
 	@curl -slL -o- https://github.com/owncloud/graph-explorer/releases/download/v1.7.10.3/release.tar.gz | tar xvzf - -C assets/
 
 ############ licenses ############
-.PHONY: ci-node-licenses-check
-ci-node-licenses-check:
+.PHONY: ci-node-check-licenses
+ci-node-check-licenses:
 	#TODO: check this fork!
 
-.PHONY: ci-node-licenses-save
-ci-node-licenses-save:
+.PHONY: ci-node-save-licenses
+ci-node-save-licenses:
 	#TODO: check this fork!
